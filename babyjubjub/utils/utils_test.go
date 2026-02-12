@@ -376,3 +376,17 @@ func TestReadAffinePoint(t *testing.T) {
 		})
 	}
 }
+
+func TestGeneratePoint(t *testing.T) {
+	parameters := gopter.DefaultTestParameters()
+	properties := gopter.NewProperties(parameters)
+
+	properties.Property("Generated points are valid subgroup points", prop.ForAll(
+		func(p *babyjub.Point) bool {
+			return p != nil && p.InSubGroup() && p.InCurve()
+		},
+		GenerateBabyJubJubPoint(),
+	))
+
+	properties.TestingRun(t)
+}
