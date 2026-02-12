@@ -1,4 +1,4 @@
-name: Go CI
+name: Check CI
 
 on:
   push:
@@ -58,9 +58,7 @@ jobs:
         run: govulncheck ./...
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+        run: golangci-lint run ./...
 
       - name: Run tests
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
