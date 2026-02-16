@@ -5,6 +5,7 @@ go 1.26.0
 require (
 	github.com/iden3/go-iden3-crypto v0.0.17
 	github.com/leanovate/gopter v0.2.9
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
@@ -158,7 +159,6 @@ require (
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
 	github.com/stbenjam/no-sprintf-host-port v0.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/tdakkota/asciicheck v0.4.1 // indirect
 	github.com/tetafro/godot v1.5.0 // indirect

@@ -16,5 +16,5 @@ const (
 
 	// BabyJubJubAddGas is the gas cost estimate for executing the
 	// BabyJubJub addition precompile in Ethereum.
-	BabyJubJubAddGas = 12300
+	BabyJubJubAddGas uint64 = 12300
 )

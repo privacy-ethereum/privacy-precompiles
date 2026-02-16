@@ -112,7 +112,7 @@ func UnmarshalPoint(input []byte) (*babyjub.Point, error) {
 	}, nil
 }
 
-// GenerateBabyJubJubPoint returns a gopter generator for valid BabyJubJub affine points.
+// BabyJubJubPointGenerator returns a gopter generator for valid BabyJubJub affine points.
 //
 // Each generated point is computed by multiplying a small random scalar `n`
 // (generated as a uint64) with the BabyJubJub base point `B8`. This ensures
@@ -120,9 +120,19 @@ func UnmarshalPoint(input []byte) (*babyjub.Point, error) {
 //
 // The generator is used with property-based tests to produce random,
 // valid points for testing arithmetic operations on the BabyJubJub curve.
-func GenerateBabyJubJubPoint() gopter.Gen {
+func BabyJubJubPointGenerator() gopter.Gen {
 	return gen.UInt64().Map(func(n uint64) *babyjub.Point {
 		scalar := new(big.Int).SetUint64(n)
 		return babyjub.NewPoint().Mul(scalar, babyjub.B8)
+	})
+}
+
+// ScalarGenerator returns a Gopter generator for random scalars modulo the BabyJubJub subgroup order.
+// Each generated scalar is a 32-byte big-endian integer reduced modulo `babyjub.SubOrder`.
+func ScalarGenerator() gopter.Gen {
+	return gen.SliceOfN(32, gen.UInt8()).Map(func(bytes []byte) *big.Int {
+		x := new(big.Int).SetBytes(bytes)
+
+		return x.Mod(x, babyjub.SubOrder)
 	})
 }
