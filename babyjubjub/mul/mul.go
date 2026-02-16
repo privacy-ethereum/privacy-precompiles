@@ -21,7 +21,7 @@ func (c *BabyJubJubCurveMul) Name() string {
 //
 // For BabyJubJub scalar multiplication, the gas cost is BabyJubJubMulGas.
 func (c *BabyJubJubCurveMul) RequiredGas(input []byte) uint64 {
-	return BabyJubJubMulGas
+	return BabyJubJubCurveMulGas
 }
 
 // Run executes the BabyJubJub scalar multiplication precompile.
@@ -48,21 +48,21 @@ func (c *BabyJubJubCurveMul) RequiredGas(input []byte) uint64 {
 //   - The input length is incorrect.
 //   - The point is invalid, not on the curve, or not in the subgroup.
 func (c *BabyJubJubCurveMul) Run(input []byte) ([]byte, error) {
-	if len(input) != BabyJubJubMulInputSize {
-		return nil, utils.ErrorBabyJubJubInvalidInputLength
+	if len(input) != BabyJubJubCurveMulInputSize {
+		return nil, utils.ErrorBabyJubJubCurveInvalidInputLength
 	}
 
 	point, _ := utils.ReadAffinePoint(input, 0)
 
 	if !point.InCurve() {
-		return nil, utils.ErrorBabyJubJubPointNotOnCurve
+		return nil, utils.ErrorBabyJubJubCurvePointNotOnCurve
 	}
 
 	if !point.InSubGroup() {
-		return nil, utils.ErrorBabyJubJubPointNotInSubgroup
+		return nil, utils.ErrorBabyJubJubCurvePointNotInSubgroup
 	}
 
-	offset := utils.BabyJubJubAffinePointSize
+	offset := utils.BabyJubJubCurveAffinePointSize
 	scalar, _ := utils.ReadField(input, offset)
 	scalar = scalar.Mod(scalar, babyjub.SubOrder)
 

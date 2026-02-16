@@ -14,14 +14,14 @@ type BabyJubJubCurveAdd struct{}
 
 // Name returns the human-readable name of the precompile.
 func (c *BabyJubJubCurveAdd) Name() string {
-	return "BabyJubJubAdd"
+	return "BabyJubJubCurveAdd"
 }
 
 // RequiredGas returns the fixed gas cost of executing this precompile.
 //
 // For BabyJubJub point addition, the gas cost is BabyJubJubAddGas.
 func (c *BabyJubJubCurveAdd) RequiredGas(input []byte) uint64 {
-	return BabyJubJubAddGas
+	return BabyJubJubCurveAddGas
 }
 
 // Run executes the BabyJubJub point addition precompile.
@@ -44,19 +44,19 @@ func (c *BabyJubJubCurveAdd) RequiredGas(input []byte) uint64 {
 //   - The input length is incorrect.
 //   - Any point is invalid, not on the curve, or not in the subgroup.
 func (c *BabyJubJubCurveAdd) Run(input []byte) ([]byte, error) {
-	if len(input) != BabyJubJubAddInputSize {
-		return nil, utils.ErrorBabyJubJubInvalidInputLength
+	if len(input) != BabyJubJubCurveAddInputSize {
+		return nil, utils.ErrorBabyJubJubCurveInvalidInputLength
 	}
 
 	point1, _ := utils.ReadAffinePoint(input, 0)
 	point2, _ := utils.ReadAffinePoint(input, 1)
 
 	if !point1.InCurve() || !point2.InCurve() {
-		return nil, utils.ErrorBabyJubJubPointNotOnCurve
+		return nil, utils.ErrorBabyJubJubCurvePointNotOnCurve
 	}
 
 	if !point1.InSubGroup() || !point2.InSubGroup() {
-		return nil, utils.ErrorBabyJubJubPointNotInSubgroup
+		return nil, utils.ErrorBabyJubJubCurvePointNotInSubgroup
 	}
 
 	result := babyjub.NewPoint().Projective().Add(point1.Projective(), point2.Projective()).Affine()

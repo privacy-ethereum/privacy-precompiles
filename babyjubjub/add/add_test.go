@@ -15,7 +15,7 @@ import (
 func TestBabyJubJubCurveAddName(t *testing.T) {
 	precompile := BabyJubJubCurveAdd{}
 
-	expected := "BabyJubJubAdd"
+	expected := "BabyJubJubCurveAdd"
 	actual := precompile.Name()
 
 	assert.Equal(t, expected, actual)
@@ -39,15 +39,15 @@ func TestAddPoints(t *testing.T) {
 		{
 			name:          "invalid input length",
 			input:         []byte{0x00},
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 		{
 			name: "invalid first point encoding",
 			input: append(
-				make([]byte, utils.BabyJubJubAffinePointSize),
-				make([]byte, utils.BabyJubJubAffinePointSize)...,
-			)[:BabyJubJubAddInputSize-1],
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+				make([]byte, utils.BabyJubJubCurveAffinePointSize),
+				make([]byte, utils.BabyJubJubCurveAffinePointSize)...,
+			)[:BabyJubJubCurveAddInputSize-1],
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 		{
 			name: "points not on curve",
@@ -55,17 +55,17 @@ func TestAddPoints(t *testing.T) {
 				utils.MarshalPoint(&babyjub.Point{X: big.NewInt(123), Y: big.NewInt(456)}),
 				utils.MarshalPoint(&babyjub.Point{X: big.NewInt(789), Y: big.NewInt(101)})...,
 			),
-			expectedError: utils.ErrorBabyJubJubPointNotOnCurve,
+			expectedError: utils.ErrorBabyJubJubCurvePointNotOnCurve,
 		},
 		{
 			name:          "input too short",
-			input:         make([]byte, BabyJubJubAddInputSize-1),
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+			input:         make([]byte, BabyJubJubCurveAddInputSize-1),
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 		{
 			name:          "empty input",
 			input:         []byte{},
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 	}
 
@@ -87,7 +87,7 @@ func TestAddPoints(t *testing.T) {
 			}
 
 			assert.Equal(t, true, bytes.Equal(actual, utils.MarshalPoint(tt.expected)))
-			assert.Equal(t, BabyJubJubAddGas, gas)
+			assert.Equal(t, BabyJubJubCurveAddGas, gas)
 		})
 	}
 }

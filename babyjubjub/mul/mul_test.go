@@ -32,7 +32,7 @@ func TestScalarMul(t *testing.T) {
 			name: "B8 scalar multiplication with 0",
 			input: append(
 				utils.MarshalPoint(babyjub.B8),
-				big.NewInt(0).FillBytes(make([]byte, utils.BabyJubJubFieldByteSize))...,
+				big.NewInt(0).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
 			),
 			expected: babyjub.NewPoint(),
 		},
@@ -40,7 +40,7 @@ func TestScalarMul(t *testing.T) {
 			name: "B8 scalar multiplication with 1",
 			input: append(
 				utils.MarshalPoint(babyjub.B8),
-				big.NewInt(1).FillBytes(make([]byte, utils.BabyJubJubFieldByteSize))...,
+				big.NewInt(1).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
 			),
 			expected: &babyjub.Point{X: babyjub.B8.X, Y: babyjub.B8.Y},
 		},
@@ -48,7 +48,7 @@ func TestScalarMul(t *testing.T) {
 			name: "B8 scalar multiplication with non-zero scalar",
 			input: append(
 				utils.MarshalPoint(babyjub.B8),
-				big.NewInt(1234).FillBytes(make([]byte, utils.BabyJubJubFieldByteSize))...,
+				big.NewInt(1234).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
 			),
 			expected: &babyjub.Point{
 				X: func() *big.Int {
@@ -69,28 +69,28 @@ func TestScalarMul(t *testing.T) {
 		{
 			name:          "invalid input length",
 			input:         []byte{0x00},
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 		{
 			name: "invalid point encoding",
 			input: append(
 				utils.MarshalPoint(babyjub.B8),
-				big.NewInt(0).FillBytes(make([]byte, utils.BabyJubJubFieldByteSize))...,
-			)[:BabyJubJubMulInputSize-1],
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+				big.NewInt(0).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
+			)[:BabyJubJubCurveMulInputSize-1],
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 		{
 			name: "point is not on curve",
 			input: append(
 				utils.MarshalPoint(&babyjub.Point{X: big.NewInt(123), Y: big.NewInt(456)}),
-				big.NewInt(9000).FillBytes(make([]byte, utils.BabyJubJubFieldByteSize))...,
+				big.NewInt(9000).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
 			),
-			expectedError: utils.ErrorBabyJubJubPointNotOnCurve,
+			expectedError: utils.ErrorBabyJubJubCurvePointNotOnCurve,
 		},
 		{
 			name:          "empty input",
 			input:         []byte{},
-			expectedError: utils.ErrorBabyJubJubInvalidInputLength,
+			expectedError: utils.ErrorBabyJubJubCurveInvalidInputLength,
 		},
 	}
 
@@ -113,7 +113,7 @@ func TestScalarMul(t *testing.T) {
 			point, err := utils.UnmarshalPoint(actual)
 
 			assert.Nil(t, err)
-			assert.Equal(t, BabyJubJubMulGas, gas)
+			assert.Equal(t, BabyJubJubCurveMulGas, gas)
 			assert.Equal(t, true, point.X.Cmp(tt.expected.X) == 0 && point.Y.Cmp(tt.expected.Y) == 0)
 		})
 	}
@@ -127,7 +127,7 @@ func TestRunProperties(t *testing.T) {
 		func(point *babyjub.Point, scalar *big.Int) bool {
 			precompile := BabyJubJubCurveMul{}
 
-			input := append(utils.MarshalPoint(point), scalar.FillBytes(make([]byte, utils.BabyJubJubFieldByteSize))...)
+			input := append(utils.MarshalPoint(point), scalar.FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...)
 			result, err := precompile.Run(input)
 
 			if err != nil {
