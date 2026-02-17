@@ -7,6 +7,7 @@ import (
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/gen"
 	"github.com/leanovate/gopter/prop"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSafeSlice(t *testing.T) {
@@ -32,15 +33,8 @@ func TestSafeSlice(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			actual, ok := SafeSlice(tt.data, tt.start, tt.end)
 
-			if ok != tt.isValid {
-				t.Errorf("SafeSlice(%v, %d, %d) valid = %v; expected %v",
-					tt.data, tt.start, tt.end, ok, tt.isValid)
-			}
-
-			if !bytes.Equal(actual, tt.expected) {
-				t.Errorf("SafeSlice(%v, %d, %d) = %v; expected %v",
-					tt.data, tt.start, tt.end, actual, tt.expected)
-			}
+			assert.Equal(t, tt.isValid, ok)
+			assert.Equal(t, true, bytes.Equal(actual, tt.expected))
 		})
 	}
 }

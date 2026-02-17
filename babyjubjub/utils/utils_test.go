@@ -9,6 +9,7 @@ import (
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/gen"
 	"github.com/leanovate/gopter/prop"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMarshalPoint(t *testing.T) {
@@ -83,23 +84,14 @@ func TestMarshalPoint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := MarshalPoint(tt.point)
 
-			if !bytes.Equal(actual, tt.expected) {
-				t.Errorf("MarshalPoint(%v) = %v; expected %v",
-					tt.point, actual, tt.expected)
-			}
+			assert.Equal(t, true, bytes.Equal(actual, tt.expected))
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
 			actual, err := UnmarshalPoint(tt.expected)
 
-			if err != nil {
-				t.Errorf("UnmarshalPoint error: %v", err)
-			}
-
-			if actual.X.Cmp(tt.point.X) != 0 || actual.Y.Cmp(tt.point.Y) != 0 {
-				t.Errorf("UnmarshalPoint(%v) = %v; expected %v",
-					tt.expected, actual, tt.point)
-			}
+			assert.Nil(t, err)
+			assert.Equal(t, true, actual.X.Cmp(tt.point.X) == 0 && actual.Y.Cmp(tt.point.Y) == 0)
 		})
 	}
 }
@@ -116,11 +108,9 @@ func TestUnmarshalPointInvalidInput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			point, err := UnmarshalPoint(tt.data)
+			_, err := UnmarshalPoint(tt.data)
 
-			if err == nil {
-				t.Errorf("UnmarshalPoint(%v) = %v; expected error", tt.data, point)
-			}
+			assert.NotNil(t, err)
 		})
 	}
 }
@@ -218,32 +208,13 @@ func TestReadField(t *testing.T) {
 			actual, offset := ReadField(tt.data, tt.offset)
 
 			if tt.expectNil {
-				if actual != nil {
-					t.Errorf("ReadField(%v, %d) = %v; expected nil", tt.data, tt.offset, actual)
-				}
+				assert.Nil(t, actual)
 
 				return
 			}
 
-			if actual == nil {
-				t.Errorf("ReadField(%v, %d); expected %v",
-					tt.data, tt.offset, tt.expectedData)
-			}
-
-			bytes := new(big.Int).SetBytes(tt.data)
-
-			if bytes.Cmp(tt.expectedData) != 0 || offset != tt.expectedOffset {
-				t.Errorf(
-					"ReadField(%v, %d) = (%v, %d); expected (%v, %d)",
-					tt.data,
-					tt.offset,
-					actual,
-					offset,
-					tt.expectedData,
-					tt.expectedOffset,
-				)
-			}
-
+			assert.NotNil(t, actual)
+			assert.Equal(t, true, new(big.Int).SetBytes(tt.data).Cmp(tt.expectedData) == 0 && offset == tt.expectedOffset)
 		})
 	}
 }
@@ -351,28 +322,13 @@ func TestReadAffinePoint(t *testing.T) {
 			actual, err := ReadAffinePoint(tt.data, tt.index)
 
 			if tt.expectErr {
-				if err == nil {
-					t.Errorf("ReadAffinePoint(%v, %d); expected error but got %v", tt.data, tt.index, actual)
-				}
+				assert.NotNil(t, err)
 
 				return
 			}
 
-			if err != nil {
-				t.Errorf("ReadAffinePoint(%v, %d); expected %v",
-					tt.data, tt.index, tt.expected)
-			}
-
-			if actual.X.Cmp(tt.expected.X) != 0 || actual.Y.Cmp(tt.expected.Y) != 0 {
-				t.Errorf(
-					"ReadAffinePoint(%v, %d) = %v; expected %v",
-					tt.data,
-					tt.index,
-					actual,
-					tt.expected,
-				)
-			}
-
+			assert.Nil(t, err)
+			assert.Equal(t, true, actual.X.Cmp(tt.expected.X) == 0 && actual.Y.Cmp(tt.expected.Y) == 0)
 		})
 	}
 }
@@ -385,7 +341,21 @@ func TestGeneratePoint(t *testing.T) {
 		func(p *babyjub.Point) bool {
 			return p != nil && p.InSubGroup() && p.InCurve()
 		},
-		GenerateBabyJubJubPoint(),
+		BabyJubJubPointGenerator(),
+	))
+
+	properties.TestingRun(t)
+}
+
+func TestGenerateScalar(t *testing.T) {
+	parameters := gopter.DefaultTestParameters()
+	properties := gopter.NewProperties(parameters)
+
+	properties.Property("Generated scalar are valid", prop.ForAll(
+		func(scalar *big.Int) bool {
+			return scalar != nil && scalar.Cmp(babyjub.SubOrder) < 0
+		},
+		ScalarGenerator(),
 	))
 
 	properties.TestingRun(t)

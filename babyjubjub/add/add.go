@@ -17,6 +17,13 @@ func (c *BabyJubJubCurveAdd) Name() string {
 	return "BabyJubJubAdd"
 }
 
+// RequiredGas returns the fixed gas cost of executing this precompile.
+//
+// For BabyJubJub point addition, the gas cost is BabyJubJubAddGas.
+func (c *BabyJubJubCurveAdd) RequiredGas(input []byte) uint64 {
+	return BabyJubJubAddGas
+}
+
 // Run executes the BabyJubJub point addition precompile.
 //
 // The input must be exactly BabyJubJubAddInputSize bytes, which encode two
@@ -55,13 +62,6 @@ func (c *BabyJubJubCurveAdd) Run(input []byte) ([]byte, error) {
 	result := babyjub.NewPoint().Projective().Add(point1.Projective(), point2.Projective()).Affine()
 
 	return utils.MarshalPoint(result), nil
-}
-
-// RequiredGas returns the fixed gas cost of executing this precompile.
-//
-// For BabyJubJub point addition, the gas cost is BabyJubJubAddGas.
-func (c *BabyJubJubCurveAdd) RequiredGas(input []byte) uint64 {
-	return BabyJubJubAddGas
 }
 
 // Ensure BabyJubJubCurveAdd implements the common.Precompile interface.

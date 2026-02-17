@@ -9,6 +9,7 @@ import (
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/prop"
 	"github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBabyJubJubCurveAddName(t *testing.T) {
@@ -17,10 +18,9 @@ func TestBabyJubJubCurveAddName(t *testing.T) {
 	expected := "BabyJubJubAdd"
 	actual := precompile.Name()
 
-	if actual != expected {
-		t.Errorf("Name() = %s; expected %s", actual, expected)
-	}
+	assert.Equal(t, expected, actual)
 }
+
 func TestAddPoints(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -77,12 +77,8 @@ func TestAddPoints(t *testing.T) {
 			gas := precompile.RequiredGas(tt.input)
 
 			if tt.expectedError != nil {
-				if err == nil {
-					t.Fatalf("expected error %v but got nil", tt.expectedError)
-				}
-				if err != tt.expectedError {
-					t.Fatalf("expected error %v but got %v", tt.expectedError, err)
-				}
+				assert.Equal(t, tt.expectedError, err)
+
 				return
 			}
 
@@ -90,13 +86,8 @@ func TestAddPoints(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if !bytes.Equal(actual, utils.MarshalPoint(tt.expected)) {
-				t.Errorf("unexpected result")
-			}
-
-			if gas != BabyJubJubAddGas {
-				t.Errorf("RequiredGas = %d; expected %d", gas, BabyJubJubAddGas)
-			}
+			assert.Equal(t, true, bytes.Equal(actual, utils.MarshalPoint(tt.expected)))
+			assert.Equal(t, BabyJubJubAddGas, gas)
 		})
 	}
 }
@@ -120,8 +111,8 @@ func TestRunProperties(t *testing.T) {
 
 			return bytes.Equal(result, utils.MarshalPoint(expected))
 		},
-		utils.GenerateBabyJubJubPoint(),
-		utils.GenerateBabyJubJubPoint(),
+		utils.BabyJubJubPointGenerator(),
+		utils.BabyJubJubPointGenerator(),
 	))
 
 	properties.TestingRun(t)
