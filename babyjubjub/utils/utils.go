@@ -4,6 +4,8 @@ import (
 	"math/big"
 
 	"github.com/iden3/go-iden3-crypto/babyjub"
+	"github.com/leanovate/gopter"
+	"github.com/leanovate/gopter/gen"
 	"github.com/privacy-ethereum/privacy-precompiles/utils"
 )
 
@@ -108,4 +110,19 @@ func UnmarshalPoint(input []byte) (*babyjub.Point, error) {
 		X: x,
 		Y: y,
 	}, nil
+}
+
+// GenerateBabyJubJubPoint returns a gopter generator for valid BabyJubJub affine points.
+//
+// Each generated point is computed by multiplying a small random scalar `n`
+// (generated as a uint64) with the BabyJubJub base point `B8`. This ensures
+// that the resulting point lies in the correct subgroup.
+//
+// The generator is used with property-based tests to produce random,
+// valid points for testing arithmetic operations on the BabyJubJub curve.
+func GenerateBabyJubJubPoint() gopter.Gen {
+	return gen.UInt64().Map(func(n uint64) *babyjub.Point {
+		scalar := new(big.Int).SetUint64(n)
+		return babyjub.NewPoint().Mul(scalar, babyjub.B8)
+	})
 }
