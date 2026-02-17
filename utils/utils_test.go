@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"math/big"
 	"testing"
 
 	"github.com/leanovate/gopter"
@@ -56,6 +57,125 @@ func TestSafeSliceProperties(t *testing.T) {
 		gen.SliceOf(gen.UInt8()),
 		gen.IntRange(-1000000, 1000000),
 		gen.IntRange(-1000000, 1000000),
+	))
+
+	properties.TestingRun(t)
+}
+
+const (
+	fieldByteSize = 32
+)
+
+func TestReadField(t *testing.T) {
+	tests := []struct {
+		name           string
+		data           []byte
+		offset         int
+		expectedData   *big.Int
+		expectedOffset int
+		expectNil      bool
+	}{
+		{
+			name:           "normal read zero",
+			data:           make([]byte, fieldByteSize),
+			offset:         0,
+			expectedData:   big.NewInt(0),
+			expectedOffset: fieldByteSize,
+			expectNil:      false,
+		},
+		{
+			name:           "normal read small number",
+			data:           append(make([]byte, fieldByteSize-1), 5),
+			offset:         0,
+			expectedData:   big.NewInt(5),
+			expectedOffset: fieldByteSize,
+			expectNil:      false,
+		},
+		{
+			name: "offset in the middle of longer slice",
+			data: append(make([]byte, 10), func() []byte {
+				bytes := make([]byte, fieldByteSize)
+				bytes[fieldByteSize-1] = 1
+
+				return bytes
+			}()...),
+			offset:         10,
+			expectedData:   big.NewInt(1),
+			expectedOffset: 10 + fieldByteSize,
+			expectNil:      false,
+		},
+
+		{
+			name:      "slice too short",
+			data:      make([]byte, fieldByteSize-1),
+			offset:    0,
+			expectNil: true,
+		},
+		{
+			name:      "offset negative",
+			data:      make([]byte, fieldByteSize),
+			offset:    -1,
+			expectNil: true,
+		},
+		{
+			name:      "offset beyond slice length",
+			data:      make([]byte, fieldByteSize),
+			offset:    fieldByteSize + 1,
+			expectNil: true,
+		},
+		{
+			name:           "large number",
+			data:           append(make([]byte, fieldByteSize-1), 0xFF),
+			offset:         0,
+			expectedData:   big.NewInt(0xFF),
+			expectedOffset: fieldByteSize,
+			expectNil:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual, offset := ReadField(tt.data, tt.offset, fieldByteSize)
+
+			if tt.expectNil {
+				assert.Nil(t, actual)
+
+				return
+			}
+
+			assert.NotNil(t, actual)
+			assert.Equal(t, true, new(big.Int).SetBytes(tt.data).Cmp(tt.expectedData) == 0 && offset == tt.expectedOffset)
+		})
+	}
+}
+
+func TestReadFieldProperties(t *testing.T) {
+	parameters := gopter.DefaultTestParameters()
+	properties := gopter.NewProperties(parameters)
+
+	properties.Property("ReadField returns correct value and offset", prop.ForAll(
+		func(data []byte, offset int) bool {
+			// Skip offsets that are invalid
+			if offset < 0 || offset > len(data) {
+				return true
+			}
+
+			actual, newOffset := ReadField(data, offset, fieldByteSize)
+
+			if len(data)-offset < fieldByteSize {
+				return actual == nil
+			}
+
+			expected := new(big.Int).SetBytes(data[offset : offset+fieldByteSize])
+
+			if actual == nil || actual.Cmp(expected) != 0 || newOffset != offset+fieldByteSize {
+				return false
+			}
+
+			return true
+		},
+		gen.SliceOfN(fieldByteSize*10, gen.UInt8()),
+		gen.IntRange(0, 9),
 	))
 
 	properties.TestingRun(t)

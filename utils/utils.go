@@ -1,5 +1,7 @@
 package utils
 
+import "math/big"
+
 // safeSlice returns a subslice of data from start (inclusive) to end (exclusive)
 // in a panic-free manner.
 //
@@ -29,4 +31,25 @@ func SafeSlice(data []byte, start, end int) ([]byte, bool) {
 	}
 
 	return data[start:end], true
+}
+
+// readField returns the field element encoded at the given byte
+// offset in the precompile input buffer, along with the next unread offset.
+//
+// The input is interpreted as a sequence of fixed-width, big-endian field
+// elements, each encoded in `size` bytes.
+//
+// If the requested range is out of bounds, readField returns (nil, offset).
+//
+// The returned value is not reduced modulo the field modulus and is not
+// validated against field bounds. Callers are responsible for enforcing any
+// required invariants.
+func ReadField(input []byte, offset, size int) (*big.Int, int) {
+	slice, ok := SafeSlice(input, offset, offset+size)
+
+	if !ok {
+		return nil, offset
+	}
+
+	return new(big.Int).SetBytes(slice), offset + size
 }

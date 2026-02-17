@@ -4,6 +4,7 @@ import (
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 	"github.com/privacy-ethereum/privacy-precompiles/common"
+	commonUtils "github.com/privacy-ethereum/privacy-precompiles/utils"
 )
 
 // BabyJubJubCurveMul implements the BabyJubJub scalar multiplication precompile.
@@ -63,7 +64,7 @@ func (c *BabyJubJubCurveMul) Run(input []byte) ([]byte, error) {
 	}
 
 	offset := utils.BabyJubJubCurveAffinePointSize
-	scalar, _ := utils.ReadField(input, offset)
+	scalar, _ := commonUtils.ReadField(input, offset, utils.BabyJubJubCurveFieldByteSize)
 	scalar = scalar.Mod(scalar, babyjub.SubOrder)
 
 	return utils.MarshalPoint(babyjub.NewPoint().Mul(scalar, point)), nil
