@@ -4,7 +4,7 @@ import "github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 
 // BabyJubJub mul precompile constants for Ethereum-like execution.
 const (
-	// BabyJubJubMulInputSize defines the fixed byte length of the input
+	// BabyJubJubCurveMulInputSize defines the fixed byte length of the input
 	// to the BabyJubJub curve scalar multiplication precompile.
 	//
 	// The input consists of:
@@ -16,16 +16,16 @@ const (
 	//
 	// Total layout:
 	//   X || Y || scalar
-	BabyJubJubMulInputSize = 3 * utils.BabyJubJubFieldByteSize
+	BabyJubJubCurveMulInputSize = 3 * utils.BabyJubJubCurveFieldByteSize
 
-	// BabyJubJubMulOutputSize defines the fixed byte length of the output
+	// BabyJubJubCurveMulOutputSize defines the fixed byte length of the output
 	// of the BabyJubJub scalar multiplication precompile.
 	//
 	// The output is a single affine point serialized as:
 	//   X || Y
-	BabyJubJubMulOutputSize = utils.BabyJubJubAffinePointSize
+	BabyJubJubCurveMulOutputSize = utils.BabyJubJubCurveAffinePointSize
 
-	// BabyJubJubMulGas is the gas cost estimate for executing the
+	// BabyJubJubCurveMulGas is the gas cost estimate for executing the
 	// BabyJubJub scalar multiplication precompile in Ethereum.
-	BabyJubJubMulGas uint64 = 14400
+	BabyJubJubCurveMulGas uint64 = 14400
 )

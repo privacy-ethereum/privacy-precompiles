@@ -4,17 +4,17 @@ import "github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 
 // BabyJubJub add precompile constants for Ethereum-like execution.
 const (
-	// BabyJubJubAddInputSize defines the fixed byte length of the input
+	// BabyJubJubCurveAddInputSize defines the fixed byte length of the input
 	// to the BabyJubJub curve addition precompile. The input consists of
 	// two affine points serialized as X || Y || X || Y.
-	BabyJubJubAddInputSize = 2 * utils.BabyJubJubAffinePointSize
+	BabyJubJubCurveAddInputSize = 2 * utils.BabyJubJubCurveAffinePointSize
 
-	// BabyJubJubAddOutputSize defines the fixed byte length of the output
+	// BabyJubJubCurveAddOutputSize defines the fixed byte length of the output
 	// of the BabyJubJub curve addition precompile. The output is a single
 	// affine point serialized as X || Y.
-	BabyJubJubAddOutputSize = utils.BabyJubJubAffinePointSize
+	BabyJubJubCurveAddOutputSize = utils.BabyJubJubCurveAffinePointSize
 
-	// BabyJubJubAddGas is the gas cost estimate for executing the
+	// BabyJubJubCurveAddGas is the gas cost estimate for executing the
 	// BabyJubJub addition precompile in Ethereum.
-	BabyJubJubAddGas uint64 = 12300
+	BabyJubJubCurveAddGas uint64 = 12300
 )

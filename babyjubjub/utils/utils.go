@@ -27,13 +27,13 @@ import (
 // readAffinePoint does not validate that the returned point lies on the curve
 // or in the correct subgroup. Callers must perform any required validation.
 func ReadAffinePoint(input []byte, index int) (*babyjub.Point, error) {
-	offset := index * BabyJubJubAffinePointSize
+	offset := index * BabyJubJubCurveAffinePointSize
 
 	x, offset := ReadField(input, offset)
 	y, _ := ReadField(input, offset)
 
 	if x == nil || y == nil {
-		return nil, ErrorBabyJubJubPointInvalid
+		return nil, ErrorBabyJubJubCurvePointInvalid
 	}
 
 	return &babyjub.Point{
@@ -54,13 +54,13 @@ func ReadAffinePoint(input []byte, index int) (*babyjub.Point, error) {
 // validated against field bounds. Callers are responsible for enforcing any
 // required invariants.
 func ReadField(input []byte, offset int) (*big.Int, int) {
-	slice, ok := utils.SafeSlice(input, offset, offset+BabyJubJubFieldByteSize)
+	slice, ok := utils.SafeSlice(input, offset, offset+BabyJubJubCurveFieldByteSize)
 
 	if !ok {
 		return nil, offset
 	}
 
-	return new(big.Int).SetBytes(slice), offset + BabyJubJubFieldByteSize
+	return new(big.Int).SetBytes(slice), offset + BabyJubJubCurveFieldByteSize
 }
 
 // marshalPoint serializes an affine BabyJubJub curve point into the fixed-size
@@ -76,12 +76,12 @@ func ReadField(input []byte, offset int) (*big.Int, int) {
 //
 // The caller must ensure that point is non-nil and in affine coordinates.
 func MarshalPoint(point *babyjub.Point) []byte {
-	output := make([]byte, BabyJubJubAffinePointSize)
-	xBytes := point.X.FillBytes(make([]byte, BabyJubJubFieldByteSize))
-	yBytes := point.Y.FillBytes(make([]byte, BabyJubJubFieldByteSize))
+	output := make([]byte, BabyJubJubCurveAffinePointSize)
+	xBytes := point.X.FillBytes(make([]byte, BabyJubJubCurveFieldByteSize))
+	yBytes := point.Y.FillBytes(make([]byte, BabyJubJubCurveFieldByteSize))
 
-	copy(output[0:BabyJubJubFieldByteSize], xBytes)
-	copy(output[BabyJubJubFieldByteSize:BabyJubJubAffinePointSize], yBytes)
+	copy(output[0:BabyJubJubCurveFieldByteSize], xBytes)
+	copy(output[BabyJubJubCurveFieldByteSize:BabyJubJubCurveAffinePointSize], yBytes)
 
 	return output
 }
@@ -96,12 +96,12 @@ func MarshalPoint(point *babyjub.Point) []byte {
 //
 // Returns an error if the input is too short or otherwise invalid.
 func UnmarshalPoint(input []byte) (*babyjub.Point, error) {
-	if len(input) != BabyJubJubAffinePointSize {
-		return nil, ErrorBabyJubJubPointInvalid
+	if len(input) != BabyJubJubCurveAffinePointSize {
+		return nil, ErrorBabyJubJubCurvePointInvalid
 	}
 
-	xBytes := input[0:BabyJubJubFieldByteSize]
-	yBytes := input[BabyJubJubFieldByteSize:BabyJubJubAffinePointSize]
+	xBytes := input[0:BabyJubJubCurveFieldByteSize]
+	yBytes := input[BabyJubJubCurveFieldByteSize:BabyJubJubCurveAffinePointSize]
 
 	x := new(big.Int).SetBytes(xBytes)
 	y := new(big.Int).SetBytes(yBytes)

@@ -22,8 +22,8 @@ func TestMarshalPoint(t *testing.T) {
 			"normal marshal",
 			&babyjub.Point{X: big.NewInt(0), Y: big.NewInt(1)},
 			func() []byte {
-				bytes := make([]byte, BabyJubJubAffinePointSize)
-				bytes[BabyJubJubAffinePointSize-1] = 1
+				bytes := make([]byte, BabyJubJubCurveAffinePointSize)
+				bytes[BabyJubJubCurveAffinePointSize-1] = 1
 
 				return bytes
 			}(),
@@ -32,7 +32,7 @@ func TestMarshalPoint(t *testing.T) {
 			"zero point",
 			&babyjub.Point{X: big.NewInt(0), Y: big.NewInt(0)},
 			func() []byte {
-				return make([]byte, BabyJubJubAffinePointSize)
+				return make([]byte, BabyJubJubCurveAffinePointSize)
 			}(),
 		},
 		{
@@ -42,14 +42,14 @@ func TestMarshalPoint(t *testing.T) {
 				Y: new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 252), big.NewInt(1)),
 			},
 			func() []byte {
-				bytes := make([]byte, BabyJubJubAffinePointSize)
+				bytes := make([]byte, BabyJubJubCurveAffinePointSize)
 				max := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 252), big.NewInt(1))
 
-				yBytes := max.FillBytes(make([]byte, BabyJubJubFieldByteSize))
-				copy(bytes[BabyJubJubFieldByteSize:], yBytes)
+				yBytes := max.FillBytes(make([]byte, BabyJubJubCurveFieldByteSize))
+				copy(bytes[BabyJubJubCurveFieldByteSize:], yBytes)
 
-				xBytes := max.FillBytes(make([]byte, BabyJubJubFieldByteSize))
-				copy(bytes[:BabyJubJubFieldByteSize], xBytes)
+				xBytes := max.FillBytes(make([]byte, BabyJubJubCurveFieldByteSize))
+				copy(bytes[:BabyJubJubCurveFieldByteSize], xBytes)
 
 				return bytes
 			}(),
@@ -58,10 +58,10 @@ func TestMarshalPoint(t *testing.T) {
 			"small non-zero values",
 			&babyjub.Point{X: big.NewInt(5), Y: big.NewInt(10)},
 			func() []byte {
-				bytes := make([]byte, BabyJubJubAffinePointSize)
+				bytes := make([]byte, BabyJubJubCurveAffinePointSize)
 
-				copy(bytes[BabyJubJubFieldByteSize-1:BabyJubJubFieldByteSize], big.NewInt(5).Bytes())
-				copy(bytes[BabyJubJubAffinePointSize-1:BabyJubJubAffinePointSize], big.NewInt(10).Bytes())
+				copy(bytes[BabyJubJubCurveFieldByteSize-1:BabyJubJubCurveFieldByteSize], big.NewInt(5).Bytes())
+				copy(bytes[BabyJubJubCurveAffinePointSize-1:BabyJubJubCurveAffinePointSize], big.NewInt(10).Bytes())
 
 				return bytes
 			}(),
@@ -70,10 +70,10 @@ func TestMarshalPoint(t *testing.T) {
 			"both small X and Y",
 			&babyjub.Point{X: big.NewInt(1), Y: big.NewInt(1)},
 			func() []byte {
-				bytes := make([]byte, BabyJubJubAffinePointSize)
+				bytes := make([]byte, BabyJubJubCurveAffinePointSize)
 
-				bytes[BabyJubJubFieldByteSize-1] = 1
-				bytes[BabyJubJubAffinePointSize-1] = 1
+				bytes[BabyJubJubCurveFieldByteSize-1] = 1
+				bytes[BabyJubJubCurveAffinePointSize-1] = 1
 
 				return bytes
 			}(),
@@ -102,8 +102,8 @@ func TestUnmarshalPointInvalidInput(t *testing.T) {
 		data []byte
 	}{
 		{"empty slice", []byte{}},
-		{"too short", make([]byte, BabyJubJubAffinePointSize-1)},
-		{"too long", make([]byte, BabyJubJubAffinePointSize+1)},
+		{"too short", make([]byte, BabyJubJubCurveAffinePointSize-1)},
+		{"too long", make([]byte, BabyJubJubCurveAffinePointSize+1)},
 	}
 
 	for _, tt := range tests {
@@ -130,7 +130,7 @@ func TestMarshalProperties(t *testing.T) {
 
 			return bytes.Equal(actual, data)
 		},
-		gen.SliceOfN(BabyJubJubAffinePointSize, gen.UInt8()),
+		gen.SliceOfN(BabyJubJubCurveAffinePointSize, gen.UInt8()),
 	))
 
 	properties.TestingRun(t)
@@ -147,58 +147,58 @@ func TestReadField(t *testing.T) {
 	}{
 		{
 			name:           "normal read zero",
-			data:           make([]byte, BabyJubJubFieldByteSize),
+			data:           make([]byte, BabyJubJubCurveFieldByteSize),
 			offset:         0,
 			expectedData:   big.NewInt(0),
-			expectedOffset: BabyJubJubFieldByteSize,
+			expectedOffset: BabyJubJubCurveFieldByteSize,
 			expectNil:      false,
 		},
 		{
 			name:           "normal read small number",
-			data:           append(make([]byte, BabyJubJubFieldByteSize-1), 5),
+			data:           append(make([]byte, BabyJubJubCurveFieldByteSize-1), 5),
 			offset:         0,
 			expectedData:   big.NewInt(5),
-			expectedOffset: BabyJubJubFieldByteSize,
+			expectedOffset: BabyJubJubCurveFieldByteSize,
 			expectNil:      false,
 		},
 		{
 			name: "offset in the middle of longer slice",
 			data: append(make([]byte, 10), func() []byte {
-				bytes := make([]byte, BabyJubJubFieldByteSize)
-				bytes[BabyJubJubFieldByteSize-1] = 1
+				bytes := make([]byte, BabyJubJubCurveFieldByteSize)
+				bytes[BabyJubJubCurveFieldByteSize-1] = 1
 
 				return bytes
 			}()...),
 			offset:         10,
 			expectedData:   big.NewInt(1),
-			expectedOffset: 10 + BabyJubJubFieldByteSize,
+			expectedOffset: 10 + BabyJubJubCurveFieldByteSize,
 			expectNil:      false,
 		},
 
 		{
 			name:      "slice too short",
-			data:      make([]byte, BabyJubJubFieldByteSize-1),
+			data:      make([]byte, BabyJubJubCurveFieldByteSize-1),
 			offset:    0,
 			expectNil: true,
 		},
 		{
 			name:      "offset negative",
-			data:      make([]byte, BabyJubJubFieldByteSize),
+			data:      make([]byte, BabyJubJubCurveFieldByteSize),
 			offset:    -1,
 			expectNil: true,
 		},
 		{
 			name:      "offset beyond slice length",
-			data:      make([]byte, BabyJubJubFieldByteSize),
-			offset:    BabyJubJubFieldByteSize + 1,
+			data:      make([]byte, BabyJubJubCurveFieldByteSize),
+			offset:    BabyJubJubCurveFieldByteSize + 1,
 			expectNil: true,
 		},
 		{
 			name:           "large number",
-			data:           append(make([]byte, BabyJubJubFieldByteSize-1), 0xFF),
+			data:           append(make([]byte, BabyJubJubCurveFieldByteSize-1), 0xFF),
 			offset:         0,
 			expectedData:   big.NewInt(0xFF),
-			expectedOffset: BabyJubJubFieldByteSize,
+			expectedOffset: BabyJubJubCurveFieldByteSize,
 			expectNil:      false,
 		},
 	}
@@ -232,19 +232,19 @@ func TestReadFieldProperties(t *testing.T) {
 
 			actual, newOffset := ReadField(data, offset)
 
-			if len(data)-offset < BabyJubJubFieldByteSize {
+			if len(data)-offset < BabyJubJubCurveFieldByteSize {
 				return actual == nil
 			}
 
-			expected := new(big.Int).SetBytes(data[offset : offset+BabyJubJubFieldByteSize])
+			expected := new(big.Int).SetBytes(data[offset : offset+BabyJubJubCurveFieldByteSize])
 
-			if actual == nil || actual.Cmp(expected) != 0 || newOffset != offset+BabyJubJubFieldByteSize {
+			if actual == nil || actual.Cmp(expected) != 0 || newOffset != offset+BabyJubJubCurveFieldByteSize {
 				return false
 			}
 
 			return true
 		},
-		gen.SliceOfN(BabyJubJubFieldByteSize*10, gen.UInt8()),
+		gen.SliceOfN(BabyJubJubCurveFieldByteSize*10, gen.UInt8()),
 		gen.IntRange(0, 9),
 	))
 
@@ -261,7 +261,7 @@ func TestReadAffinePoint(t *testing.T) {
 	}{
 		{
 			name:      "normal read zero",
-			data:      make([]byte, BabyJubJubAffinePointSize),
+			data:      make([]byte, BabyJubJubCurveAffinePointSize),
 			index:     0,
 			expected:  &babyjub.Point{X: big.NewInt(0), Y: big.NewInt(0)},
 			expectErr: false,
@@ -269,9 +269,9 @@ func TestReadAffinePoint(t *testing.T) {
 		{
 			name: "non-zero X and Y",
 			data: func() []byte {
-				bytes := make([]byte, BabyJubJubAffinePointSize)
-				bytes[BabyJubJubFieldByteSize-1] = 5
-				bytes[BabyJubJubAffinePointSize-1] = 10
+				bytes := make([]byte, BabyJubJubCurveAffinePointSize)
+				bytes[BabyJubJubCurveFieldByteSize-1] = 5
+				bytes[BabyJubJubCurveAffinePointSize-1] = 10
 
 				return bytes
 			}(),
@@ -285,8 +285,8 @@ func TestReadAffinePoint(t *testing.T) {
 		{
 			name: "second point in slice",
 			data: func() []byte {
-				bytes := make([]byte, 2*BabyJubJubAffinePointSize)
-				bytes[BabyJubJubAffinePointSize+BabyJubJubFieldByteSize+BabyJubJubFieldByteSize-1] = 1
+				bytes := make([]byte, 2*BabyJubJubCurveAffinePointSize)
+				bytes[BabyJubJubCurveAffinePointSize+BabyJubJubCurveFieldByteSize+BabyJubJubCurveFieldByteSize-1] = 1
 
 				return bytes
 			}(),
@@ -299,19 +299,19 @@ func TestReadAffinePoint(t *testing.T) {
 		},
 		{
 			name:      "negative index",
-			data:      make([]byte, BabyJubJubAffinePointSize),
+			data:      make([]byte, BabyJubJubCurveAffinePointSize),
 			index:     -1,
 			expectErr: true,
 		},
 		{
 			name:      "slice too short",
-			data:      make([]byte, BabyJubJubAffinePointSize-1),
+			data:      make([]byte, BabyJubJubCurveAffinePointSize-1),
 			index:     0,
 			expectErr: true,
 		},
 		{
 			name:      "index beyond slice",
-			data:      make([]byte, BabyJubJubAffinePointSize),
+			data:      make([]byte, BabyJubJubCurveAffinePointSize),
 			index:     1,
 			expectErr: true,
 		},
