@@ -55,12 +55,8 @@ func (c *BabyJubJubCurveMul) Run(input []byte) ([]byte, error) {
 
 	point, _ := utils.ReadAffinePoint(input, 0)
 
-	if !point.InCurve() {
-		return nil, utils.ErrorBabyJubJubCurvePointNotOnCurve
-	}
-
 	if !point.InSubGroup() {
-		return nil, utils.ErrorBabyJubJubCurvePointNotInSubgroup
+		return nil, utils.ErrorBabyJubJubCurveInvalidPoint
 	}
 
 	offset := utils.BabyJubJubCurveAffinePointSize

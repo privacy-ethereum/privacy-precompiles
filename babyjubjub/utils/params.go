@@ -25,11 +25,9 @@ var (
 	// length does not match the expected size (e.g., point or field element size).
 	ErrorBabyJubJubCurveInvalidInputLength = errors.New("invalid input length")
 
-	// ErrorBabyJubJubCurvePointNotOnCurve is returned when a point does not
-	// satisfy the BabyJubJub curve equation.
-	ErrorBabyJubJubCurvePointNotOnCurve = errors.New("point not on curve")
-
-	// ErrorBabyJubJubCurvePointNotInSubgroup is returned when a point is not
-	// in the correct subgroup of the BabyJubJub curve.
-	ErrorBabyJubJubCurvePointNotInSubgroup = errors.New("point not in subgroup")
+	// ErrorBabyJubJubCurveInvalidPoint is returned when a point
+	// fails validation on the BabyJubJub curve. This includes cases
+	// where the point is not on the curve or is not in the correct
+	// prime-order subgroup.
+	ErrorBabyJubJubCurveInvalidPoint = errors.New("point not in subgroup")
 )

@@ -245,3 +245,19 @@ func TestGenerateScalar(t *testing.T) {
 
 	properties.TestingRun(t)
 }
+
+func TestPrivateKeyScalar(t *testing.T) {
+	parameters := gopter.DefaultTestParameters()
+	properties := gopter.NewProperties(parameters)
+
+	properties.Property("Generated private keys are valid", prop.ForAll(
+		func(key babyjub.PrivateKey) bool {
+			privateKey := new(big.Int).SetBytes(key[:])
+
+			return privateKey != nil && privateKey.Cmp(babyjub.SubOrder) < 0
+		},
+		PrivateKeyGenerator(),
+	))
+
+	properties.TestingRun(t)
+}

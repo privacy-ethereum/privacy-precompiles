@@ -55,7 +55,22 @@ func TestAddPoints(t *testing.T) {
 				utils.MarshalPoint(&babyjub.Point{X: big.NewInt(123), Y: big.NewInt(456)}),
 				utils.MarshalPoint(&babyjub.Point{X: big.NewInt(789), Y: big.NewInt(101)})...,
 			),
-			expectedError: utils.ErrorBabyJubJubCurvePointNotOnCurve,
+			expectedError: utils.ErrorBabyJubJubCurveInvalidPoint,
+		},
+		{
+			name: "points not in subgroup",
+			input: func() []byte {
+				point := &babyjub.Point{
+					X: big.NewInt(0),
+					Y: new(big.Int).Sub(utils.FieldPrime, big.NewInt(1)), // p - 1 == -1 mod p
+				}
+
+				return append(
+					utils.MarshalPoint(point),
+					utils.MarshalPoint(point)...,
+				)
+			}(),
+			expectedError: utils.ErrorBabyJubJubCurveInvalidPoint,
 		},
 		{
 			name:          "input too short",
