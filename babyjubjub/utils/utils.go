@@ -29,8 +29,8 @@ import (
 func ReadAffinePoint(input []byte, index int) (*babyjub.Point, error) {
 	offset := index * BabyJubJubCurveAffinePointSize
 
-	x, offset := ReadField(input, offset)
-	y, _ := ReadField(input, offset)
+	x, offset := utils.ReadField(input, offset, BabyJubJubCurveFieldByteSize)
+	y, _ := utils.ReadField(input, offset, BabyJubJubCurveFieldByteSize)
 
 	if x == nil || y == nil {
 		return nil, ErrorBabyJubJubCurvePointInvalid
@@ -40,27 +40,6 @@ func ReadAffinePoint(input []byte, index int) (*babyjub.Point, error) {
 		X: x,
 		Y: y,
 	}, nil
-}
-
-// readField returns the BabyJubJub field element encoded at the given byte
-// offset in the precompile input buffer, along with the next unread offset.
-//
-// The input is interpreted as a sequence of fixed-width, big-endian field
-// elements, each encoded in babyJubJubFieldByteSize bytes.
-//
-// If the requested range is out of bounds, readField returns (nil, offset).
-//
-// The returned value is not reduced modulo the field modulus and is not
-// validated against field bounds. Callers are responsible for enforcing any
-// required invariants.
-func ReadField(input []byte, offset int) (*big.Int, int) {
-	slice, ok := utils.SafeSlice(input, offset, offset+BabyJubJubCurveFieldByteSize)
-
-	if !ok {
-		return nil, offset
-	}
-
-	return new(big.Int).SetBytes(slice), offset + BabyJubJubCurveFieldByteSize
 }
 
 // marshalPoint serializes an affine BabyJubJub curve point into the fixed-size

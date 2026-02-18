@@ -136,135 +136,20 @@ func TestMarshalProperties(t *testing.T) {
 	properties.TestingRun(t)
 }
 
-func TestReadField(t *testing.T) {
-	tests := []struct {
-		name           string
-		data           []byte
-		offset         int
-		expectedData   *big.Int
-		expectedOffset int
-		expectNil      bool
-	}{
-		{
-			name:           "normal read zero",
-			data:           make([]byte, BabyJubJubCurveFieldByteSize),
-			offset:         0,
-			expectedData:   big.NewInt(0),
-			expectedOffset: BabyJubJubCurveFieldByteSize,
-			expectNil:      false,
-		},
-		{
-			name:           "normal read small number",
-			data:           append(make([]byte, BabyJubJubCurveFieldByteSize-1), 5),
-			offset:         0,
-			expectedData:   big.NewInt(5),
-			expectedOffset: BabyJubJubCurveFieldByteSize,
-			expectNil:      false,
-		},
-		{
-			name: "offset in the middle of longer slice",
-			data: append(make([]byte, 10), func() []byte {
-				bytes := make([]byte, BabyJubJubCurveFieldByteSize)
-				bytes[BabyJubJubCurveFieldByteSize-1] = 1
-
-				return bytes
-			}()...),
-			offset:         10,
-			expectedData:   big.NewInt(1),
-			expectedOffset: 10 + BabyJubJubCurveFieldByteSize,
-			expectNil:      false,
-		},
-
-		{
-			name:      "slice too short",
-			data:      make([]byte, BabyJubJubCurveFieldByteSize-1),
-			offset:    0,
-			expectNil: true,
-		},
-		{
-			name:      "offset negative",
-			data:      make([]byte, BabyJubJubCurveFieldByteSize),
-			offset:    -1,
-			expectNil: true,
-		},
-		{
-			name:      "offset beyond slice length",
-			data:      make([]byte, BabyJubJubCurveFieldByteSize),
-			offset:    BabyJubJubCurveFieldByteSize + 1,
-			expectNil: true,
-		},
-		{
-			name:           "large number",
-			data:           append(make([]byte, BabyJubJubCurveFieldByteSize-1), 0xFF),
-			offset:         0,
-			expectedData:   big.NewInt(0xFF),
-			expectedOffset: BabyJubJubCurveFieldByteSize,
-			expectNil:      false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			actual, offset := ReadField(tt.data, tt.offset)
-
-			if tt.expectNil {
-				assert.Nil(t, actual)
-
-				return
-			}
-
-			assert.NotNil(t, actual)
-			assert.Equal(t, true, new(big.Int).SetBytes(tt.data).Cmp(tt.expectedData) == 0 && offset == tt.expectedOffset)
-		})
-	}
-}
-
-func TestReadFieldProperties(t *testing.T) {
-	parameters := gopter.DefaultTestParameters()
-	properties := gopter.NewProperties(parameters)
-
-	properties.Property("ReadField returns correct value and offset", prop.ForAll(
-		func(data []byte, offset int) bool {
-			// Skip offsets that are invalid
-			if offset < 0 || offset > len(data) {
-				return true
-			}
-
-			actual, newOffset := ReadField(data, offset)
-
-			if len(data)-offset < BabyJubJubCurveFieldByteSize {
-				return actual == nil
-			}
-
-			expected := new(big.Int).SetBytes(data[offset : offset+BabyJubJubCurveFieldByteSize])
-
-			if actual == nil || actual.Cmp(expected) != 0 || newOffset != offset+BabyJubJubCurveFieldByteSize {
-				return false
-			}
-
-			return true
-		},
-		gen.SliceOfN(BabyJubJubCurveFieldByteSize*10, gen.UInt8()),
-		gen.IntRange(0, 9),
-	))
-
-	properties.TestingRun(t)
-}
-
 func TestReadAffinePoint(t *testing.T) {
 	tests := []struct {
-		name      string
-		data      []byte
-		index     int
-		expected  *babyjub.Point
-		expectErr bool
+		name        string
+		data        []byte
+		index       int
+		expected    *babyjub.Point
+		expectError bool
 	}{
 		{
-			name:      "normal read zero",
-			data:      make([]byte, BabyJubJubCurveAffinePointSize),
-			index:     0,
-			expected:  &babyjub.Point{X: big.NewInt(0), Y: big.NewInt(0)},
-			expectErr: false,
+			name:        "normal read zero",
+			data:        make([]byte, BabyJubJubCurveAffinePointSize),
+			index:       0,
+			expected:    &babyjub.Point{X: big.NewInt(0), Y: big.NewInt(0)},
+			expectError: false,
 		},
 		{
 			name: "non-zero X and Y",
@@ -280,7 +165,7 @@ func TestReadAffinePoint(t *testing.T) {
 				X: big.NewInt(5),
 				Y: big.NewInt(10),
 			},
-			expectErr: false,
+			expectError: false,
 		},
 		{
 			name: "second point in slice",
@@ -295,25 +180,25 @@ func TestReadAffinePoint(t *testing.T) {
 				X: big.NewInt(0),
 				Y: big.NewInt(1),
 			},
-			expectErr: false,
+			expectError: false,
 		},
 		{
-			name:      "negative index",
-			data:      make([]byte, BabyJubJubCurveAffinePointSize),
-			index:     -1,
-			expectErr: true,
+			name:        "negative index",
+			data:        make([]byte, BabyJubJubCurveAffinePointSize),
+			index:       -1,
+			expectError: true,
 		},
 		{
-			name:      "slice too short",
-			data:      make([]byte, BabyJubJubCurveAffinePointSize-1),
-			index:     0,
-			expectErr: true,
+			name:        "slice too short",
+			data:        make([]byte, BabyJubJubCurveAffinePointSize-1),
+			index:       0,
+			expectError: true,
 		},
 		{
-			name:      "index beyond slice",
-			data:      make([]byte, BabyJubJubCurveAffinePointSize),
-			index:     1,
-			expectErr: true,
+			name:        "index beyond slice",
+			data:        make([]byte, BabyJubJubCurveAffinePointSize),
+			index:       1,
+			expectError: true,
 		},
 	}
 
@@ -321,7 +206,7 @@ func TestReadAffinePoint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			actual, err := ReadAffinePoint(tt.data, tt.index)
 
-			if tt.expectErr {
+			if tt.expectError {
 				assert.NotNil(t, err)
 
 				return
