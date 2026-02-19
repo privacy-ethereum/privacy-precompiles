@@ -85,7 +85,22 @@ func TestScalarMul(t *testing.T) {
 				utils.MarshalPoint(&babyjub.Point{X: big.NewInt(123), Y: big.NewInt(456)}),
 				big.NewInt(9000).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
 			),
-			expectedError: utils.ErrorBabyJubJubCurvePointNotOnCurve,
+			expectedError: utils.ErrorBabyJubJubCurveInvalidPoint,
+		},
+		{
+			name: "point is not in subgroup",
+			input: func() []byte {
+				point := &babyjub.Point{
+					X: big.NewInt(0),
+					Y: new(big.Int).Sub(utils.FieldPrime, big.NewInt(1)), // p - 1 == -1 mod p
+				}
+
+				return append(
+					utils.MarshalPoint(point),
+					big.NewInt(9000).FillBytes(make([]byte, utils.BabyJubJubCurveFieldByteSize))...,
+				)
+			}(),
+			expectedError: utils.ErrorBabyJubJubCurveInvalidPoint,
 		},
 		{
 			name:          "empty input",

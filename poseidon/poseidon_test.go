@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBabyJubJubCurveMulName(t *testing.T) {
+func TestPoseidonName(t *testing.T) {
 	precompile := Poseidon{}
 
 	expected := "Poseidon"

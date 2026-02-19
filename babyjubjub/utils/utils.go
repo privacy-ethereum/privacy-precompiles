@@ -91,6 +91,15 @@ func UnmarshalPoint(input []byte) (*babyjub.Point, error) {
 	}, nil
 }
 
+// FieldPrime is the prime modulus p of the finite field Fp over which
+// the BabyJubJub curve is defined.
+// This is the same prime used by the BN254 (alt_bn128) curve and defines
+// the base field for all BabyJubJub curve arithmetic.
+var FieldPrime, _ = new(big.Int).SetString(
+	"21888242871839275222246405745257275088548364400416034343698204186575808495617",
+	10,
+)
+
 // BabyJubJubPointGenerator returns a gopter generator for valid BabyJubJub affine points.
 //
 // Each generated point is computed by multiplying a small random scalar `n`
@@ -113,5 +122,16 @@ func ScalarGenerator() gopter.Gen {
 		x := new(big.Int).SetBytes(bytes)
 
 		return x.Mod(x, babyjub.SubOrder)
+	})
+}
+
+// PrivateKeyGenerator returns a Gopter generator for BabyJubJub private keys
+// derived from random scalars modulo `babyjub.SubOrder`, encoded as 32-byte big-endian values.
+func PrivateKeyGenerator() gopter.Gen {
+	return ScalarGenerator().Map(func(scalar *big.Int) babyjub.PrivateKey {
+		var key babyjub.PrivateKey
+		scalar.FillBytes(key[:])
+
+		return key
 	})
 }

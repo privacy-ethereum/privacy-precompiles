@@ -71,6 +71,18 @@ func TestValidatePoint(t *testing.T) {
 			expected: []byte{0},
 		},
 		{
+			name: "point is not in subgroup",
+			input: func() []byte {
+				point := &babyjub.Point{
+					X: big.NewInt(0),
+					Y: new(big.Int).Sub(utils.FieldPrime, big.NewInt(1)), // p - 1 == -1 mod p
+				}
+
+				return utils.MarshalPoint(point)
+			}(),
+			expected: []byte{0},
+		},
+		{
 			name: "max field values (invalid point)",
 			input: func() []byte {
 				max := big.NewInt(0).Sub(babyjub.Order, big.NewInt(1))

@@ -51,12 +51,8 @@ func (c *BabyJubJubCurveAdd) Run(input []byte) ([]byte, error) {
 	point1, _ := utils.ReadAffinePoint(input, 0)
 	point2, _ := utils.ReadAffinePoint(input, 1)
 
-	if !point1.InCurve() || !point2.InCurve() {
-		return nil, utils.ErrorBabyJubJubCurvePointNotOnCurve
-	}
-
 	if !point1.InSubGroup() || !point2.InSubGroup() {
-		return nil, utils.ErrorBabyJubJubCurvePointNotInSubgroup
+		return nil, utils.ErrorBabyJubJubCurveInvalidPoint
 	}
 
 	result := babyjub.NewPoint().Projective().Add(point1.Projective(), point2.Projective()).Affine()
