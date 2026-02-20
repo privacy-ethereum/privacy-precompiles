@@ -6,7 +6,7 @@ import (
 	"github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 )
 
-// BabyJubJub EdDSA precompile constants for Ethereum-like execution.
+// BabyJubJub EdDSA precompile constants
 const (
 	// BabyJubJubCurveEdDSAVerifyInputSize defines the fixed byte length of the input
 	// to the BabyJubJub EdDSA signature verification precompile.

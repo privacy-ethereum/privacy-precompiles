@@ -2,7 +2,7 @@ package mul
 
 import "github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 
-// BabyJubJub mul precompile constants for Ethereum-like execution.
+// BabyJubJub mul precompile constants
 const (
 	// BabyJubJubCurveMulInputSize defines the fixed byte length of the input
 	// to the BabyJubJub curve scalar multiplication precompile.

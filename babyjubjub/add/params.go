@@ -2,7 +2,7 @@ package add
 
 import "github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 
-// BabyJubJub add precompile constants for Ethereum-like execution.
+// BabyJubJub add precompile constants
 const (
 	// BabyJubJubCurveAddInputSize defines the fixed byte length of the input
 	// to the BabyJubJub curve addition precompile. The input consists of

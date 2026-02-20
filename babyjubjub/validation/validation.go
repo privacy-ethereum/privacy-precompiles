@@ -1,4 +1,4 @@
-package on_curve
+package validation
 
 import (
 	"github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
@@ -25,7 +25,7 @@ func (c *BabyJubJubCurveValidatePoint) Name() string {
 
 // RequiredGas returns the fixed gas cost of executing this precompile.
 //
-// For BabyJubJub point validation, the gas cost is BabyJubJubValidatePointGas.
+// For BabyJubJub point validation, the gas cost is BabyJubJubCurveValidatePointGas.
 func (c *BabyJubJubCurveValidatePoint) RequiredGas(input []byte) uint64 {
 	return BabyJubJubCurveValidatePointGas
 }

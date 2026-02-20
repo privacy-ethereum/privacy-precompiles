@@ -1,4 +1,4 @@
-package on_curve
+package validation
 
 import (
 	"bytes"
