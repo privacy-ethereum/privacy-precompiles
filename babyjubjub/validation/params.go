@@ -1,8 +1,8 @@
-package on_curve
+package validation
 
 import "github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
 
-// BabyJubJubValidatePoint precompile constants for Ethereum-like execution.
+// BabyJubJubValidatePoint precompile constants
 const (
 	// BabyJubJubCurveValidatePointInputSize defines the fixed byte length of the input
 	// to the BabyJubJub point validation precompile. The input consists of a

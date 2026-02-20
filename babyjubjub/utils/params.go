@@ -2,7 +2,7 @@ package utils
 
 import "errors"
 
-// BabyJubJub common precompile constants for Ethereum-like execution.
+// BabyJubJub common precompile constants
 const (
 	// BabyJubJubCurveFieldByteSize defines the fixed byte length of a field element
 	// in the BabyJubJub elliptic curve. Each coordinate (X or Y) is represented
@@ -29,5 +29,5 @@ var (
 	// fails validation on the BabyJubJub curve. This includes cases
 	// where the point is not on the curve or is not in the correct
 	// prime-order subgroup.
-	ErrorBabyJubJubCurveInvalidPoint = errors.New("point not in subgroup")
+	ErrorBabyJubJubCurveInvalidPoint = errors.New("invalid point")
 )
