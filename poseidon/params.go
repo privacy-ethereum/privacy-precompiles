@@ -2,7 +2,7 @@ package poseidon
 
 import "errors"
 
-// Poseidon hash precompile constants for Ethereum-like execution.
+// Poseidon hash precompile constants
 const (
 	// PoseidonInputWordSize defines the fixed byte length of a single
 	// Poseidon input field element.
