@@ -107,7 +107,7 @@ func ParseG2(
 func (p *SolidityBN254Parser) ParseProof(data []byte) (groth16.Proof, error) {
 	var proof groth16bn254.Proof
 	var err error
-	var offset int
+	var offset int = 0
 
 	offset, err = ParseG1(data, offset, &proof.Ar)
 
@@ -145,7 +145,7 @@ func (p *SolidityBN254Parser) ParseProof(data []byte) (groth16.Proof, error) {
 func (p *SolidityBN254Parser) ParseVerifyingKey(data []byte, numberOfPublicInputs int) (groth16.VerifyingKey, error) {
 	var vk groth16bn254.VerifyingKey
 	var err error
-	var offset int
+	var offset int = 0
 
 	offset, err = ParseG1(data, offset, &vk.G1.Alpha)
 
@@ -204,14 +204,14 @@ func (p *SolidityBN254Parser) ParsePublicWitness(
 	data []byte,
 	numberOfPublicInputs int,
 ) (witness.Witness, error) {
-	w, _ := witness.New(ecc.BN254.ScalarField())
+	publicWitness, _ := witness.New(ecc.BN254.ScalarField())
 
-	ch := make(chan any, numberOfPublicInputs)
+	channel := make(chan any, numberOfPublicInputs)
 	offset := 0
 
 	for range numberOfPublicInputs {
 		if slice, ok := utils.SafeSlice(data, offset, offset+BN254Groth16FieldSize); ok {
-			ch <- new(big.Int).SetBytes(slice)
+			channel <- new(big.Int).SetBytes(slice)
 		} else {
 			return nil, errors.New("invalid slice")
 		}
@@ -219,14 +219,14 @@ func (p *SolidityBN254Parser) ParsePublicWitness(
 		offset += BN254Groth16FieldSize
 	}
 
-	close(ch)
+	close(channel)
 
-	if err := w.Fill(numberOfPublicInputs, 0, ch); err != nil {
+	if err := publicWitness.Fill(numberOfPublicInputs, 0, channel); err != nil {
 		// Cannot fail through this parser
 		// 1. Channel always contains exactly numberOfPublicInputs elements
 		// 2. All elements are *big.Int, set always succeeds (SetBigInt reduces modulo field)
 		return nil, err
 	}
 
-	return w, nil
+	return publicWitness, nil
 }

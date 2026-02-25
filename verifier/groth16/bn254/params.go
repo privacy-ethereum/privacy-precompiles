@@ -28,7 +28,6 @@ const (
 	//   - Beta (G2)
 	//   - Gamma (G2)
 	//   - Delta (G2)
-	//   - IC[0] (G1)
 	//
 	// Additional IC elements corresponding to public inputs may be
 	// appended dynamically depending on the circuit.
