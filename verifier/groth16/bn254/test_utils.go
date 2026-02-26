@@ -7,6 +7,7 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	groth16bn254 "github.com/consensys/gnark/backend/groth16/bn254"
+	"github.com/consensys/gnark/frontend"
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/gen"
 	"github.com/privacy-ethereum/privacy-precompiles/babyjubjub/utils"
@@ -46,45 +47,55 @@ func G2AffineGenerator() gopter.Gen {
 	})
 }
 
+// ProofStruct represents the Groth16 proof
+type ProofStruct struct {
+	Ar  *bn254.G1Affine
+	Bs  *bn254.G2Affine
+	Krs *bn254.G1Affine
+}
+
 // ProofBytesGenerator returns a gopter generator that produces a byte slice
 // representing a Groth16 proof in the form [G1 | G2 | G1] for the BN254 curve.
 func ProofBytesGenerator() gopter.Gen {
-	return gen.Struct(reflect.TypeOf(struct {
-		Ar  *bn254.G1Affine
-		Bs  *bn254.G2Affine
-		Krs *bn254.G1Affine
-	}{}), map[string]gopter.Gen{
+	return gen.Struct(reflect.TypeOf(ProofStruct{}), map[string]gopter.Gen{
 		"Ar":  G1AffineGenerator(),
 		"Bs":  G2AffineGenerator(),
 		"Krs": G1AffineGenerator(),
-	}).Map(func(value struct {
-		Ar  *bn254.G1Affine
-		Bs  *bn254.G2Affine
-		Krs *bn254.G1Affine
-	}) []byte {
-		out := make([]byte, BN254Groth16G1Size*2+BN254Groth16G2Size)
+	}).Map(func(value ProofStruct) []byte {
+		proof := &groth16bn254.Proof{}
 
-		x := value.Ar.X.Bytes()
-		y := value.Ar.Y.Bytes()
-		out = append(out, x[:]...)
-		out = append(out, y[:]...)
+		proof.Ar = *value.Ar
+		proof.Bs = *value.Bs
+		proof.Krs = *value.Krs
 
-		x1 := value.Bs.X.A1.Bytes()
-		x0 := value.Bs.X.A0.Bytes()
-		y1 := value.Bs.Y.A1.Bytes()
-		y0 := value.Bs.Y.A0.Bytes()
-		out = append(out, x1[:]...)
-		out = append(out, x0[:]...)
-		out = append(out, y1[:]...)
-		out = append(out, y0[:]...)
-
-		x = value.Krs.X.Bytes()
-		y = value.Krs.Y.Bytes()
-		out = append(out, x[:]...)
-		out = append(out, y[:]...)
-
-		return out
+		return SerializeProof(proof)
 	})
+}
+
+// SerializeVerifyingKey converts a gnark Groth16 verifying key into a byte slice.
+func SerializeProof(value *groth16bn254.Proof) []byte {
+	out := make([]byte, 0)
+
+	x := value.Ar.X.Bytes()
+	y := value.Ar.Y.Bytes()
+	out = append(out, x[:]...)
+	out = append(out, y[:]...)
+
+	x1 := value.Bs.X.A1.Bytes()
+	x0 := value.Bs.X.A0.Bytes()
+	y1 := value.Bs.Y.A1.Bytes()
+	y0 := value.Bs.Y.A0.Bytes()
+	out = append(out, x1[:]...)
+	out = append(out, x0[:]...)
+	out = append(out, y1[:]...)
+	out = append(out, y0[:]...)
+
+	x = value.Krs.X.Bytes()
+	y = value.Krs.Y.Bytes()
+	out = append(out, x[:]...)
+	out = append(out, y[:]...)
+
+	return out
 }
 
 // G1Struct represents the G1 components of a Groth16 verifying key.
@@ -141,7 +152,7 @@ func VerifyingKeyGenerator(numberOfPublicInputs int) gopter.Gen {
 
 // SerializeVerifyingKey converts a gnark Groth16 verifying key into a byte slice.
 func SerializeVerifyingKey(value *groth16bn254.VerifyingKey) []byte {
-	out := make([]byte, 0, BN254Groth16G1Size*2+BN254Groth16G2Size*3+BN254Groth16G1Size*(len(value.G1.K)))
+	out := make([]byte, 0)
 
 	serializeG1 := func(p bn254.G1Affine) {
 		x := p.X.Bytes()
@@ -158,8 +169,8 @@ func SerializeVerifyingKey(value *groth16bn254.VerifyingKey) []byte {
 
 		out = append(out, x1[:]...)
 		out = append(out, x0[:]...)
-		out = append(out, y0[:]...)
 		out = append(out, y1[:]...)
+		out = append(out, y0[:]...)
 	}
 
 	serializeG1(value.G1.Alpha)
@@ -188,4 +199,55 @@ func WitnessBytesGenerator() gopter.Gen {
 
 		return out
 	})
+}
+
+// VariablePublicCircuit defines a Groth16 circuit with a variable number of public inputs.
+type VariablePublicCircuit struct {
+	Public []frontend.Variable `gnark:",public"`
+}
+
+// Define implements the circuit constraints.
+//
+// For each public input, it enforces that the value is different from zero.
+// This guarantees that randomly generated assignments in property tests
+// satisfy a simple non-trivial constraint.
+func (c *VariablePublicCircuit) Define(api frontend.API) error {
+	for _, v := range c.Public {
+		api.AssertIsDifferent(v, 0)
+	}
+
+	return nil
+}
+
+// CircuitGeneratorStruct bundles together a circuit definition and a matching assignment instance.
+type CircuitGeneratorStruct struct {
+	Circuit    *VariablePublicCircuit
+	Assignment *VariablePublicCircuit
+}
+
+// CircuitGenerator returns a gopter generator that produces Groth16 circuits
+// with a variable number (1–64) of public inputs, along with valid assignments.
+func CircuitGenerator() gopter.Gen {
+	return gen.IntRange(1, 64).FlatMap(func(n interface{}) gopter.Gen {
+		size := n.(int)
+
+		return gen.SliceOfN(size, gen.IntRange(1, 100)).Map(func(values []int) *CircuitGeneratorStruct {
+			circuit := &VariablePublicCircuit{
+				Public: make([]frontend.Variable, size),
+			}
+
+			assignment := &VariablePublicCircuit{
+				Public: make([]frontend.Variable, size),
+			}
+
+			for index, value := range values {
+				assignment.Public[index] = value
+			}
+
+			return &CircuitGeneratorStruct{
+				Circuit:    circuit,
+				Assignment: assignment,
+			}
+		})
+	}, reflect.TypeOf(&CircuitGeneratorStruct{}))
 }

@@ -28,6 +28,13 @@ fmt: tools
 	goimports -w .
 
 # -----------------------------
+# Build
+# -----------------------------
+build:
+	@echo "Building all packages..."
+	go build ./...
+
+# -----------------------------
 # Static analysis
 # -----------------------------
 vet: tools
@@ -57,5 +64,5 @@ test: tools
 # -----------------------------
 # Full CI run (all checks)
 # -----------------------------
-ci: fmt vet lint security test
+ci: fmt build vet lint security test
 	@echo "All checks passed."
